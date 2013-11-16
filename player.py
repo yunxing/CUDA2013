@@ -68,9 +68,8 @@ def loop(player, *args):
             sys.exit(0)
         except Exception as e:
             print(repr(e))
-        print "system restarting"
-        time.sleep(10)
-        print "system restarted"
+        print "system stopped"
+        break
 
 class SocketLayer:
     def __init__(self, host, port):
@@ -173,8 +172,8 @@ def add_ai(ip, port, name):
     AIs_total.append(0)
 
 
-# add_ai("127.0.0.1", 33333, "yunxing_rule_player")
-add_ai("127.0.0.1", 8888, "dumb player")
+add_ai("127.0.0.1", 33333, "yunxing_rule_player")
+# add_ai("127.0.0.1", 8888, "dumb player")
 # add_ai("10.144.3.173", 33333, "weiwei")
 # add_ai("10.144.3.174", 33333, "guoxing")
 
