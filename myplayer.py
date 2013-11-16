@@ -37,7 +37,6 @@ class Challenge:
 class Game():
     def __init__(self, id):
         self.id = id
-        self.just_challenged = False
         self.cards_left_num = 104
         self.cards_left = [4 for i in range(0, 14)]
         self.cards_left[0] = 0
@@ -132,8 +131,6 @@ def msg_receiver(s):
                 if isinstance(r, Play):
                     game.cards_we_played.append(r.card)
                     game.set_last_played_card_by_player(r.card)
-                else:  #revert just played card
-                    game.just_challenged = True
 
                 game.write(colored('%s\n' % repr(r.to_json()), 'red'))
 
