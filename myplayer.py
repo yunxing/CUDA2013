@@ -40,6 +40,9 @@ class Game():
         self.first_to_play = False
         self.last_played_card_by_player = 0
         self.f = open('./%d.txt' % id, 'w')
+        self.cards_we_played = []
+        self.cards_they_played = []
+        self.hand_id = 0
 
     def set_is_first_to_play(self, b):
         self.first_to_play = b
@@ -90,12 +93,13 @@ def msg_receiver(s):
             else:
                 game = Game(gameId)
             if msg["request"] == "request_card":
-                if msg["state"]:
+                if  msg["state"]:
                     game.write(colored('%s\n' % repr(msg), 'green'))
-
+                game.hand_id = msg["state"]["hand_id"]
                 if "card" in msg["state"]:
                     game.write(colored('''{'type': 'play_card', 'card': %d}'\n''' % msg["state"]["card"],
                                        'green'))
+                    game.cards_they_played.append(msg["state"]["card"])
                     game.set_is_first_to_play(False)
                 else:
                     game.set_is_first_to_play(True)
@@ -103,9 +107,12 @@ def msg_receiver(s):
                 r = game.play_card(msg["state"])
 
                 if isinstance(r, Play):
+                    game.cards_we_played.append(r.card)
                     game.card_played(r.card)
                     game.set_last_played_card_by_player(r.card)
-
+                else:  #revert just played card
+                    if "card" in msg["state"]:
+                        del game.cards_they_played[-1]
                 game.write(colored('%s\n' % repr(r.to_json()), 'red'))
 
                 s.send({"type": "move", "request_id": msg["request_id"],
@@ -125,12 +132,14 @@ def msg_receiver(s):
                 if game.first_to_play:
                     game.write(colored('''{'type': 'play_card', 'card': %d}'\n''' % msg["result"]["card"],
                                        'green'))
+                    game.cards_they_played.append(msg["result"]["card"])
                     game.card_played(msg["result"]["card"])
 
             if msg["result"]["type"] == "trick_tied":
                 if game.first_to_play:
                     game.write(colored('''{'type': 'play_card', 'card': %d}'\n''' % game.last_played_card_by_player,
                                        'green'))
+                    game.cards_they_played.append(game.last_played_card_by_player)
                     game.card_played(game.last_played_card_by_player)
             if msg["result"]["type"] == "hand_done":
                 if "by" not in msg["result"]:
@@ -139,9 +148,27 @@ def msg_receiver(s):
                     game.write("You won one hand\n")
                 else:
                     game.write("You lost one hand\n")
+                    if len(game.cards_we_played) == 5 and len(game.cards_they_played) == 5:
+                        we = sorted(game.cards_we_played)
+                        they = sorted(game.cards_they_played)
+                        sum = 0
+                        print we
+                        print they
+                        for i in range(5):
+                            if we[i] > they[i]:
+                                sum += 1
+                        if sum >= 3:
+                            print colored("%d's %d hand was not suppose to lose" % (game.id, game.hand_id),
+                                          "red")
+                game.cards_we_played = []
+                game.cards_they_played = []
+
+                game.write("Their move:%s \n" % repr(game.cards_they_played))
+                game.write("Our   move:%s \n" % repr(game.cards_we_played))
+
+
                 game.write("\n\n")
 
-            print "Ignore result for now"
             s.send({"type": "internal"})
 
 

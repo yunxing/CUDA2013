@@ -106,6 +106,12 @@ class SocketLayer:
         self.s.send(data)
 
 
+def ai_print_results():
+    print ""
+    print AIs_names
+    print AIs_stat
+
+
 def ai_won(ai_index):
     print "ai_won for %s" % AIs_names[ai_index]
     AIs_stat[ai_index] += len(AIs) - 1
@@ -114,6 +120,7 @@ def ai_won(ai_index):
             AIs_stat[i] -= 1
             if AIs_stat[i] < 0:
                 AIs_stat[i] = 0
+    ai_print_results()
 
 
 def ai_lost(ai_index):
@@ -124,6 +131,7 @@ def ai_lost(ai_index):
     for i in range(len(AIs_stat)):
         if i != ai_index:
             AIs_stat[i] += 1
+    ai_print_results()
 
 
 def get_random_ai_index():
@@ -154,12 +162,28 @@ AIs.append(ai)
 AIs_names.append("dumb_random")
 AIs_stat.append(ALPHA)
 
-ai = SocketLayer("127.0.0.1", 8889)
-ai.send({"type": "ping"})
-print ai.pump()
-AIs.append(ai)
-AIs_names.append("dumb_random2")
-AIs_stat.append(ALPHA)
+# ai = SocketLayer("127.0.0.1", 8889)
+# ai.send({"type": "ping"})
+# print ai.pump()
+# AIs.append(ai)
+# AIs_names.append("dumb_random2")
+# AIs_stat.append(ALPHA)
+
+# ai = SocketLayer("10.144.3.173", 33333)
+# ai.send({"type": "ping"})
+# print ai.pump()
+# AIs.append(ai)
+# AIs_names.append("weiwei")
+# AIs_stat.append(ALPHA)
+
+# ai = SocketLayer("10.144.3.174", 33333)
+# ai.send({"type": "ping"})
+# print ai.pump()
+# AIs.append(ai)
+# AIs_names.append("guoxing")
+# AIs_stat.append(ALPHA)
+
+
 
 if __name__ == "__main__":
     loop(sample_bot, "cuda.contest", 9999)
