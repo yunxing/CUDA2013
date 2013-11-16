@@ -110,11 +110,18 @@ def ai_print_results():
     print ""
     print AIs_names
     print AIs_stat
+    print "wins"
+    print AIs_wins
+    print "total"
+    print AIs_total
+    print ""
 
 
 def ai_won(ai_index):
     print "ai_won for %s" % AIs_names[ai_index]
     AIs_stat[ai_index] += len(AIs) - 1
+    AIs_wins[ai_index] += 1
+    AIs_total[ai_index] += 1
     for i in range(len(AIs_stat)):
         if i != ai_index:
             AIs_stat[i] -= 1
@@ -126,6 +133,7 @@ def ai_won(ai_index):
 def ai_lost(ai_index):
     print "ai_lost for %s" % AIs_names[ai_index]
     AIs_stat[ai_index] -= len(AIs) - 1
+    AIs_total[ai_index] += 1
     if AIs_stat[ai_index] < 0:
         AIs_stat[ai_index] = 0
     for i in range(len(AIs_stat)):
@@ -150,38 +158,28 @@ def get_ai(ai_index):
     return AIs[ai_index]
 
 AIs = []
+AIs_wins = []
+AIs_total = []
 AIs_stat = []
 AIs_names = []
 
 ALPHA = 100
 
-ai = SocketLayer("127.0.0.1", 8888)
-ai.send({"type": "ping"})
-print ai.pump()
-AIs.append(ai)
-AIs_names.append("dumb_random")
-AIs_stat.append(ALPHA)
 
-# ai = SocketLayer("127.0.0.1", 8889)
-# ai.send({"type": "ping"})
-# print ai.pump()
-# AIs.append(ai)
-# AIs_names.append("dumb_random2")
-# AIs_stat.append(ALPHA)
+def add_ai(ip, port, name):
+    ai = SocketLayer(ip, port)
+    ai.send({"type": "ping"})
+    print ai.pump()
+    AIs.append(ai)
+    AIs_names.append(name)
+    AIs_stat.append(ALPHA)
+    AIs_wins.append(0)
+    AIs_total.append(0)
 
-# ai = SocketLayer("10.144.3.173", 33333)
-# ai.send({"type": "ping"})
-# print ai.pump()
-# AIs.append(ai)
-# AIs_names.append("weiwei")
-# AIs_stat.append(ALPHA)
 
-# ai = SocketLayer("10.144.3.174", 33333)
-# ai.send({"type": "ping"})
-# print ai.pump()
-# AIs.append(ai)
-# AIs_names.append("guoxing")
-# AIs_stat.append(ALPHA)
+# add_ai("127.0.0.1", 33333, "yunxing_rule_player")
+# add_ai("10.144.3.173", 33333, "weiwei")
+add_ai("10.144.3.174", 33333, "guoxing")
 
 
 

@@ -4,8 +4,11 @@ import struct
 import time
 import random
 import sys
+import redis
 import SocketServer
 from termcolor import colored
+
+r_g = None
 
 class Reject:
     def to_json(self):
@@ -53,6 +56,9 @@ class Game():
     def card_played(self, c):
         self.cards_left_num -= 1
         self.cards_left[c] -= 1
+        if self.cards_left_num <= 4:
+            self.cards_left_num = 104
+            self.cards_left = [4 for i in range(0, 14)]
 
     def write(self, blob):
         self.f.write(blob)
@@ -210,6 +216,9 @@ class SocketLayer:
         self.s.send(data)
 
 if __name__ == "__main__":
+    pool = redis.ConnectionPool(host='10.144.3.114', port=6379, db=0)
+    r_g = redis.Redis(connection_pool=pool)
+    assert r_g.ping()
     SocketServer.TCPServer.allow_reuse_address = True
     server = SocketServer.TCPServer(("0.0.0.0", int(sys.argv[1])), MyTCPHandler)
     server.allow_reuse_address = True
