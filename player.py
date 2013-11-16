@@ -48,8 +48,6 @@ def loop(player, *args):
                 print("Connected to the server.")
                 continue
 
-            print "getting %s from the server" % str(m)
-            print ""
             ai.send(m)
             reply = ai.pump()
             # update AI
@@ -63,9 +61,8 @@ def loop(player, *args):
 
             if reply["type"] == "internal":
                 continue
-            print "sending %s back to server" % str(reply)
+
             cuda.send(reply)
-            print "one roop ends"
             continue
         except KeyboardInterrupt:
             sys.exit(0)
@@ -145,7 +142,6 @@ def ai_lost(ai_index):
 def get_random_ai_index():
     total = sum(AIs_stat)
     v = random.randint(0, total)
-    print v
     sofar = 0
     for i in range(len(AIs_stat) - 1):
         if v <= sofar + AIs_stat[i + 1]:
@@ -178,9 +174,9 @@ def add_ai(ip, port, name):
 
 
 # add_ai("127.0.0.1", 33333, "yunxing_rule_player")
-# add_ai("127.0.0.1", 8889, "dumb player")
+add_ai("127.0.0.1", 8888, "dumb player")
 # add_ai("10.144.3.173", 33333, "weiwei")
-add_ai("10.144.3.174", 33333, "guoxing")
+# add_ai("10.144.3.174", 33333, "guoxing")
 
 
 

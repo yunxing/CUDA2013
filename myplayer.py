@@ -35,8 +35,9 @@ class Challenge:
 
 
 class Game():
-    def __init__(self, id):
+    def __init__(self, id, opponent_id):
         self.id = id
+        self.opponent_id = opponent_id
         self.cards_left_num = 104
         self.cards_left = [8 for i in range(0, 14)]
         self.cards_left[0] = 0
@@ -45,9 +46,20 @@ class Game():
         self.f = open('./%d.txt' % id, 'w')
         self.cards_we_played = []
         self.cards_they_played = []
+        self.challenged = False
         self.origin_hand = []
         self.hand_id = 0
         self.total_tricks = -1
+        self.reset_challenge_rate()
+
+    def reset_challenge_rate(self):
+        total = r_g.get("%d:total" % self.opponent_id)
+        win = r_g.get("%d:win" % self.opponent_id)
+        if not total:
+            self.challenge_rate = -1
+        else:
+            self.challenge_rate = float(win) / float(total)
+        print self.challenge_rate
 
     def set_is_first_to_play(self, b):
         self.first_to_play = b
@@ -99,9 +111,10 @@ def msg_receiver(s):
                 if gameId != game.id:
                     print("New game started: " + str(gameId))
                     game.finalize()
-                    game = Game(gameId)
+                    game = Game(gameId, msg["state"]["opponent_id"])
+
             else:
-                game = Game(gameId)
+                game = Game(gameId, msg["state"]["opponent_id"])
 
             if msg["state"]["hand_id"] != game.hand_id:
                 for c in msg["state"]["hand"]:
@@ -131,6 +144,9 @@ def msg_receiver(s):
                 if isinstance(r, Play):
                     game.cards_we_played.append(r.card)
                     game.set_last_played_card_by_player(r.card)
+                else:
+                    game.challenged = True
+                    r_g.incr("%d:total" % game.opponent_id)
 
                 game.write(colored('%s\n' % repr(r.to_json()), 'red'))
 
@@ -163,6 +179,7 @@ def msg_receiver(s):
                 if "by" not in msg["result"]:
                     game.write("You tied a hand!\n")
                 elif msg["result"]["by"] == msg["your_player_num"]:
+                    r_g.incr("%d:win" % game.opponent_id)
                     game.write("You won one hand\n")
                 else:
                     game.write("You lost one hand\n")
@@ -182,7 +199,9 @@ def msg_receiver(s):
                 game.total_tricks = -1
                 game.cards_we_played = []
                 game.cards_they_played = []
+                game.challenged = False
                 game.hand_end()
+                game.reset_challenge_rate()
                 game.write("Cards left:%s \n" % repr(game.cards_left))
                 game.write("Their move:%s \n" % repr(game.cards_they_played))
                 game.write("Our   move:%s \n" % repr(game.cards_we_played))
