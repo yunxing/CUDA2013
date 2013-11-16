@@ -178,9 +178,11 @@ def msg_receiver(s):
                         if sum >= 3:
                             print colored("%d's %d hand was not suppose to lose" % (game.id, game.hand_id),
                                           "red")
+
+                game.total_tricks = -1
                 game.cards_we_played = []
                 game.cards_they_played = []
-
+                game.hand_end()
                 game.write("Cards left:%s \n" % repr(game.cards_left))
                 game.write("Their move:%s \n" % repr(game.cards_they_played))
                 game.write("Our   move:%s \n" % repr(game.cards_we_played))
