@@ -178,8 +178,9 @@ def add_ai(ip, port, name):
 
 
 # add_ai("127.0.0.1", 33333, "yunxing_rule_player")
+add_ai("127.0.0.1", 8889, "dumb player")
 # add_ai("10.144.3.173", 33333, "weiwei")
-add_ai("10.144.3.174", 33333, "guoxing")
+# add_ai("10.144.3.174", 33333, "guoxing")
 
 
 

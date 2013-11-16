@@ -104,7 +104,7 @@ def msg_receiver(s):
                 game = Game(gameId)
 
             if msg["state"]["hand_id"] != game.hand_id:
-                for c in msg["state"]["hand_id"]:
+                for c in msg["state"]["hand"]:
                     game.cards_left[c] -= 1
 
             game.hand_id = msg["state"]["hand_id"]
