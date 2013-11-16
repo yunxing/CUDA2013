@@ -38,7 +38,7 @@ class Game():
     def __init__(self, id):
         self.id = id
         self.cards_left_num = 104
-        self.cards_left = [4 for i in range(0, 14)]
+        self.cards_left = [8 for i in range(0, 14)]
         self.cards_left[0] = 0
         self.first_to_play = False
         self.last_played_card_by_player = 0
