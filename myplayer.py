@@ -133,7 +133,9 @@ def msg_receiver(s):
                                        'green'))
                     game.card_played(game.last_played_card_by_player)
             if msg["result"]["type"] == "hand_done":
-                if msg["result"]["by"] == msg["your_player_num"]:
+                if "by" not in msg["result"]:
+                    game.write("You tied a hand!\n")
+                elif msg["result"]["by"] == msg["your_player_num"]:
                     game.write("You won one hand\n")
                 else:
                     game.write("You lost one hand\n")
@@ -182,7 +184,7 @@ class SocketLayer:
 
 if __name__ == "__main__":
     SocketServer.TCPServer.allow_reuse_address = True
-    server = SocketServer.TCPServer(("0.0.0.0", 8888), MyTCPHandler)
+    server = SocketServer.TCPServer(("0.0.0.0", int(sys.argv[1])), MyTCPHandler)
     server.allow_reuse_address = True
     print "waiting for connection"
     server.serve_forever()

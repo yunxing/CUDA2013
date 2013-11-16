@@ -1,7 +1,7 @@
 #!/usr/bin/python
 
 # This should work in both recent Python 2 and Python 3.
-
+import random
 import socket
 import json
 import struct
@@ -33,11 +33,10 @@ def sample_bot(host, port):
             print("Connected to the server.")
 
 def loop(player, *args):
-    ai = SocketLayer("127.0.0.1", 8888)
-    ai.send({"type": "ping"})
-    msg = ai.pump()
-    print msg
     cuda = SocketLayer(*args)
+    # fisrt time starting game
+    ai_index = get_random_ai_index()
+    ai = get_ai(ai_index)
     while True:
         try:
             # proxy the request
@@ -48,10 +47,20 @@ def loop(player, *args):
             if m["type"] == "greetings_program":
                 print("Connected to the server.")
                 continue
+
             print "getting %s from the server" % str(m)
             print ""
             ai.send(m)
             reply = ai.pump()
+            # update AI
+            if m["type"] == "result" and m["result"]["type"] == "game_won":
+                if m["result"]["by"] == m["your_player_num"]:
+                    ai_won(ai_index)
+                else:
+                    ai_lost(ai_index)
+                ai_index = get_random_ai_index()
+                ai = get_ai(ai_index)
+
             if reply["type"] == "internal":
                 continue
             print "sending %s back to server" % str(reply)
@@ -97,6 +106,60 @@ class SocketLayer:
         self.s.send(data)
 
 
+def ai_won(ai_index):
+    print "ai_won for %s" % AIs_names[ai_index]
+    AIs_stat[ai_index] += len(AIs) - 1
+    for i in range(len(AIs_stat)):
+        if i != ai_index:
+            AIs_stat[i] -= 1
+            if AIs_stat[i] < 0:
+                AIs_stat[i] = 0
+
+
+def ai_lost(ai_index):
+    print "ai_lost for %s" % AIs_names[ai_index]
+    AIs_stat[ai_index] -= len(AIs) - 1
+    if AIs_stat[ai_index] < 0:
+        AIs_stat[ai_index] = 0
+    for i in range(len(AIs_stat)):
+        if i != ai_index:
+            AIs_stat[i] += 1
+
+
+def get_random_ai_index():
+    total = sum(AIs_stat)
+    v = random.randint(0, total)
+    print v
+    sofar = 0
+    for i in range(len(AIs_stat) - 1):
+        if v <= sofar + AIs_stat[i + 1]:
+            return i
+        sofar += AIs_stat[i]
+    return len(AIs_stat) - 1
+
+
+def get_ai(ai_index):
+    return AIs[ai_index]
+
+AIs = []
+AIs_stat = []
+AIs_names = []
+
+ALPHA = 100
+
+ai = SocketLayer("127.0.0.1", 8888)
+ai.send({"type": "ping"})
+print ai.pump()
+AIs.append(ai)
+AIs_names.append("dumb_random")
+AIs_stat.append(ALPHA)
+
+ai = SocketLayer("127.0.0.1", 8889)
+ai.send({"type": "ping"})
+print ai.pump()
+AIs.append(ai)
+AIs_names.append("dumb_random2")
+AIs_stat.append(ALPHA)
 
 if __name__ == "__main__":
     loop(sample_bot, "cuda.contest", 9999)
